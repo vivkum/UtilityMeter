@@ -283,6 +283,10 @@ static dlms_data_access_result_t clock_write_fn(
     return DLMS_RESULT_READ_WRITE_DENIED;
 }
 
+/* Forward declaration of object_list encoder */
+static dlms_data_access_result_t encode_object_list(
+    uint8_t *out_buf, uint16_t max_out_len, uint16_t *actual_len);
+
 /* --- Class 15: Association LN Callbacks --- */
 static dlms_data_access_result_t assoc_read_fn(
     const dlms_cosem_object_t *obj, uint8_t attr_index,
@@ -304,6 +308,12 @@ static dlms_data_access_result_t assoc_read_fn(
         /* Application Context Name */
         uint8_t oid[7] = { 0x60, 0x85, 0x74, 0x05, 0x08, 0x01, (obj->obis.e <= 1) ? 1 : 3 };
         dlms_axdr_encode_octet_string(&enc, oid, 7);
+    } else if (attr_index == 2) {
+        /*
+         * Attribute 2: object_list (Association View)
+         * Encodes the directory of all COSEM objects exposed to the client.
+         */
+        return encode_object_list(out_buf, max_out_len, actual_len);
     } else {
         return DLMS_RESULT_READ_WRITE_DENIED;
     }
@@ -673,6 +683,72 @@ static dlms_cosem_object_t s_cosem_objects[] = {
 
 #define NUM_COSEM_OBJECTS (sizeof(s_cosem_objects) / sizeof(s_cosem_objects[0]))
 
+static dlms_data_access_result_t encode_object_list(
+    uint8_t *out_buf, uint16_t max_out_len, uint16_t *actual_len)
+{
+    dlms_axdr_encoder_t enc;
+    dlms_axdr_encoder_init(&enc, out_buf, max_out_len);
+
+    if (!dlms_axdr_encode_array_header(&enc, (uint16_t)NUM_COSEM_OBJECTS)) {
+        return DLMS_RESULT_TEMPORARY_FAILURE;
+    }
+
+    for (size_t i = 0; i < NUM_COSEM_OBJECTS; i++) {
+        const dlms_cosem_object_t *o = &s_cosem_objects[i];
+
+        /* Structure of 4 elements: { class_id, version, logical_name, access_rights } */
+        if (!dlms_axdr_encode_structure_header(&enc, 4)) return DLMS_RESULT_TEMPORARY_FAILURE;
+
+        /* 1. class_id */
+        if (!dlms_axdr_encode_u16(&enc, (uint16_t)o->class_id)) return DLMS_RESULT_TEMPORARY_FAILURE;
+
+        /* 2. version */
+        if (!dlms_axdr_encode_u8(&enc, o->version)) return DLMS_RESULT_TEMPORARY_FAILURE;
+
+        /* 3. logical_name (6 bytes) */
+        uint8_t obis_bytes[6] = { o->obis.a, o->obis.b, o->obis.c, o->obis.d, o->obis.e, o->obis.f };
+        if (!dlms_axdr_encode_octet_string(&enc, obis_bytes, 6)) return DLMS_RESULT_TEMPORARY_FAILURE;
+
+        /* 4. access_rights: structure(attribute_access, method_access) */
+        if (!dlms_axdr_encode_structure_header(&enc, 2)) return DLMS_RESULT_TEMPORARY_FAILURE;
+
+        /* 4a. attribute_access array */
+        uint8_t num_attrs = o->num_attrs;
+        if (num_attrs == 0) num_attrs = 2;
+        if (!dlms_axdr_encode_array_header(&enc, num_attrs)) return DLMS_RESULT_TEMPORARY_FAILURE;
+
+        for (uint8_t a = 1; a <= num_attrs; a++) {
+            if (!dlms_axdr_encode_structure_header(&enc, 3)) return DLMS_RESULT_TEMPORARY_FAILURE;
+            if (!dlms_axdr_encode_i8(&enc, (int8_t)a)) return DLMS_RESULT_TEMPORARY_FAILURE;
+
+            /* Access mode: 1=read_only, 3=read_and_write */
+            uint8_t mode = 1;
+            if (o->class_id == DLMS_CLASS_CLOCK && a == 2) {
+                mode = 3; /* Clock time can be written */
+            } else if (o->class_id == DLMS_CLASS_PROFILE_GENERIC && (a == 3 || a == 5 || a == 6)) {
+                mode = 0; /* Unimplemented optional profile generic attributes */
+            }
+            if (!dlms_axdr_encode_enum(&enc, mode)) return DLMS_RESULT_TEMPORARY_FAILURE;
+
+            /* access_selectors: null-data */
+            if (!dlms_axdr_encode_null(&enc)) return DLMS_RESULT_TEMPORARY_FAILURE;
+        }
+
+        /* 4b. method_access array */
+        uint8_t num_methods = o->num_methods;
+        if (!dlms_axdr_encode_array_header(&enc, num_methods)) return DLMS_RESULT_TEMPORARY_FAILURE;
+
+        for (uint8_t m = 1; m <= num_methods; m++) {
+            if (!dlms_axdr_encode_structure_header(&enc, 2)) return DLMS_RESULT_TEMPORARY_FAILURE;
+            if (!dlms_axdr_encode_i8(&enc, (int8_t)m)) return DLMS_RESULT_TEMPORARY_FAILURE;
+            if (!dlms_axdr_encode_bool(&enc, true)) return DLMS_RESULT_TEMPORARY_FAILURE;
+        }
+    }
+
+    *actual_len = enc.offset;
+    return DLMS_RESULT_SUCCESS;
+}
+
 void dlms_objects_init(void) {
     s_load_profile_count = 0;
     s_load_profile_head = 0;
@@ -760,9 +836,9 @@ static dlms_result_t handle_get_request(
             return DLMS_OK;
         }
 
-        uint8_t data_buf[DLMS_MAX_PDU_SIZE];
+        static uint8_t s_get_data_buf[DLMS_MAX_PDU_SIZE * 2];
         uint16_t actual_data_len = 0;
-        dlms_data_access_result_t res = obj->read_fn(obj, attr_id, data_buf, sizeof(data_buf), &actual_data_len, assoc);
+        dlms_data_access_result_t res = obj->read_fn(obj, attr_id, s_get_data_buf, sizeof(s_get_data_buf), &actual_data_len, assoc);
 
         if (res != DLMS_RESULT_SUCCESS) {
             resp[0] = DLMS_TAG_GET_RESPONSE;
@@ -780,7 +856,7 @@ static dlms_result_t handle_get_request(
             s_block_transfer.current_block_num = 1;
             s_block_transfer.cache_len = actual_data_len;
             s_block_transfer.sent_offset = DLMS_BLOCK_TRANSFER_SIZE;
-            memcpy(s_block_transfer.cache_buf, data_buf, actual_data_len);
+            memcpy(s_block_transfer.cache_buf, s_get_data_buf, actual_data_len);
 
             resp[0] = DLMS_TAG_GET_RESPONSE;
             resp[1] = DLMS_GET_RESPONSE_DATABLOCK;
@@ -791,7 +867,8 @@ static dlms_result_t handle_get_request(
 
             dlms_axdr_encoder_t enc;
             dlms_axdr_encoder_init(&enc, resp + 9, max_resp_len - 9);
-            dlms_axdr_encode_octet_string(&enc, data_buf, DLMS_BLOCK_TRANSFER_SIZE);
+            dlms_axdr_encode_length(&enc, DLMS_BLOCK_TRANSFER_SIZE);
+            dlms_axdr_encode_raw(&enc, s_get_data_buf, DLMS_BLOCK_TRANSFER_SIZE);
             *resp_len = 9 + enc.offset;
             return DLMS_OK;
         }
@@ -801,7 +878,7 @@ static dlms_result_t handle_get_request(
         resp[1] = DLMS_GET_RESPONSE_NORMAL;
         resp[2] = invoke_id;
         resp[3] = 0x00; /* Result: Data */
-        memcpy(resp + 4, data_buf, actual_data_len);
+        memcpy(resp + 4, s_get_data_buf, actual_data_len);
         *resp_len = 4 + actual_data_len;
         return DLMS_OK;
     } else if (get_type == DLMS_GET_REQUEST_NEXT) {
@@ -810,9 +887,10 @@ static dlms_result_t handle_get_request(
         uint32_t block_num = ((uint32_t)req[3] << 24) | ((uint32_t)req[4] << 16) |
                              ((uint32_t)req[5] << 8) | req[6];
 
-        uint16_t rem = s_block_transfer.cache_len - s_block_transfer.sent_offset;
+        uint16_t offset = (uint16_t)((block_num - 1) * DLMS_BLOCK_TRANSFER_SIZE);
+        uint16_t rem = (s_block_transfer.cache_len > offset) ? (s_block_transfer.cache_len - offset) : 0;
         uint16_t send_len = (rem > DLMS_BLOCK_TRANSFER_SIZE) ? DLMS_BLOCK_TRANSFER_SIZE : rem;
-        bool last_block = (s_block_transfer.sent_offset + send_len >= s_block_transfer.cache_len);
+        bool last_block = (offset + send_len >= s_block_transfer.cache_len);
 
         resp[0] = DLMS_TAG_GET_RESPONSE;
         resp[1] = DLMS_GET_RESPONSE_DATABLOCK;
@@ -826,10 +904,10 @@ static dlms_result_t handle_get_request(
 
         dlms_axdr_encoder_t enc;
         dlms_axdr_encoder_init(&enc, resp + 9, max_resp_len - 9);
-        dlms_axdr_encode_octet_string(&enc, s_block_transfer.cache_buf + s_block_transfer.sent_offset, send_len);
+        dlms_axdr_encode_length(&enc, send_len);
+        dlms_axdr_encode_raw(&enc, s_block_transfer.cache_buf + offset, send_len);
         *resp_len = 9 + enc.offset;
 
-        s_block_transfer.sent_offset += send_len;
         if (last_block) {
             s_block_transfer.active = false;
         }
