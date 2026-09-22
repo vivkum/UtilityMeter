@@ -1,0 +1,541 @@
+configVersion: 1.0.0
+componentName: HarmonyCore
+coreVersion: 5.9.0
+device: PIC32CX2051MTC128
+library: []
+dependency:
+- dependencyPackage: class com.microchip.mcc.harmony.HarmonyModule
+  name: HarmonyCore
+  type: module
+  version: ''
+- dependencyPackage: ''
+  name: core
+  type: package
+  version: v3.16.0
+customDataClassName: com.microchip.utils_mh3.utils.persistence.CustomModuleData
+data:
+  attachments: {}
+  elementPosition:
+    attributes:
+      id: __ROOTVIEW
+    children:
+    - children:
+      - attributes:
+          id: HarmonyCore
+          x: '319'
+          y: '69'
+        type: ElementPosition
+      type: ElementPositions
+    type: ComponentGraph
+  symbols:
+    ENABLE_APP_FILE:
+      attributes:
+        id: ENABLE_APP_FILE
+      children:
+      - children:
+        - attributes:
+            id: HarmonyCore
+            value: 'true'
+          type: Dynamic
+        type: Values
+      type: Boolean
+    ENABLE_DRV_COMMON:
+      attributes:
+        id: ENABLE_DRV_COMMON
+      children:
+      - children:
+        - attributes:
+            id: readOnly
+          children:
+          - type: Value
+            value: 'false'
+          type: Boolean
+        type: Attributes
+      - children:
+        - attributes:
+            id: HarmonyCore
+            value: 'false'
+          type: Dynamic
+        - attributes:
+            value: 'true'
+          type: User
+        type: Values
+      type: Boolean
+    ENABLE_OSAL:
+      attributes:
+        id: ENABLE_OSAL
+      children:
+      - children:
+        - attributes:
+            id: HarmonyCore
+            value: 'true'
+          type: Dynamic
+        type: Values
+      type: Boolean
+    ENABLE_SYS_CACHE:
+      attributes:
+        id: ENABLE_SYS_CACHE
+      children:
+      - children:
+        - attributes:
+            id: HarmonyCore
+            value: 'true'
+          type: Dynamic
+        type: Values
+      type: Boolean
+    ENABLE_SYS_COMMON:
+      attributes:
+        id: ENABLE_SYS_COMMON
+      children:
+      - children:
+        - attributes:
+            id: readOnly
+          children:
+          - type: Value
+            value: 'true'
+          type: Boolean
+        type: Attributes
+      - children:
+        - attributes:
+            id: HarmonyCore
+            value: 'true'
+          type: Dynamic
+        type: Values
+      type: Boolean
+    ENABLE_SYS_INT:
+      attributes:
+        id: ENABLE_SYS_INT
+      children:
+      - children:
+        - attributes:
+            id: HarmonyCore
+            value: 'true'
+          type: Dynamic
+        type: Values
+      type: Boolean
+    ENABLE_SYS_MEDIA:
+      attributes:
+        id: ENABLE_SYS_MEDIA
+      children:
+      - children:
+        - attributes:
+            id: readOnly
+          children:
+          - type: Value
+            value: 'true'
+          type: Boolean
+        type: Attributes
+      - children:
+        - attributes:
+            id: HarmonyCore
+            value: 'true'
+          type: Dynamic
+        type: Values
+      type: Boolean
+    ENABLE_SYS_RESET:
+      attributes:
+        id: ENABLE_SYS_RESET
+      children:
+      - children:
+        - attributes:
+            id: readOnly
+          children:
+          - type: Value
+            value: 'true'
+          type: Boolean
+        type: Attributes
+      - children:
+        - attributes:
+            id: HarmonyCore
+            value: 'true'
+          type: Dynamic
+        type: Values
+      type: Boolean
+    GEN_APP_RTOS_TASK_2_DELAY:
+      attributes:
+        id: GEN_APP_RTOS_TASK_2_DELAY
+      children:
+      - children:
+        - attributes:
+            id: visible
+          children:
+          - type: Value
+            value: 'true'
+          type: Boolean
+        type: Attributes
+      - children:
+        - attributes:
+            value: '100'
+          type: User
+        type: Values
+      type: Integer
+    GEN_APP_RTOS_TASK_2_USE_DELAY:
+      attributes:
+        id: GEN_APP_RTOS_TASK_2_USE_DELAY
+      children:
+      - children:
+        - attributes:
+            value: 'true'
+          type: User
+        type: Values
+      type: Boolean
+    GEN_APP_TASK_COUNT:
+      attributes:
+        id: GEN_APP_TASK_COUNT
+        label: Number of Applications
+      children:
+      - children:
+        - attributes:
+            value: '7'
+          type: User
+        type: Values
+      type: Integer
+    GEN_APP_TASK_NAME_0:
+      attributes:
+        id: GEN_APP_TASK_NAME_0
+      children:
+      - children:
+        - attributes:
+            value: app_metrology
+          type: User
+        type: Values
+      type: String
+    GEN_APP_TASK_NAME_1:
+      attributes:
+        id: GEN_APP_TASK_NAME_1
+      children:
+      - children:
+        - attributes:
+            value: app_console
+          type: User
+        type: Values
+      type: String
+    GEN_APP_TASK_NAME_2:
+      attributes:
+        id: GEN_APP_TASK_NAME_2
+      children:
+      - children:
+        - attributes:
+            value: app_datalog
+          type: User
+        type: Values
+      type: String
+    GEN_APP_TASK_NAME_3:
+      attributes:
+        id: GEN_APP_TASK_NAME_3
+      children:
+      - children:
+        - attributes:
+            value: app_display
+          type: User
+        type: Values
+      type: String
+    GEN_APP_TASK_NAME_4:
+      attributes:
+        id: GEN_APP_TASK_NAME_4
+      children:
+      - children:
+        - attributes:
+            value: app_energy
+          type: User
+        type: Values
+      type: String
+    GEN_APP_TASK_NAME_5:
+      attributes:
+        id: GEN_APP_TASK_NAME_5
+      children:
+      - children:
+        - attributes:
+            value: app_events
+          type: User
+        type: Values
+      type: String
+    SELECT_RTOS:
+      attributes:
+        id: SELECT_RTOS
+      children:
+      - children:
+        - attributes:
+            id: HarmonyCore
+            value: BareMetal
+          type: Dynamic
+        type: Values
+      type: Combo
+    APP0_C:
+      attributes:
+        id: APP0_C
+      children:
+      - children:
+        - attributes:
+            id: enabled
+          children:
+          - type: Value
+            value: 'true'
+          type: Boolean
+        - attributes:
+            id: name
+          children:
+          - type: Value
+            value: app_metrology.c
+          type: String
+        type: Attributes
+      type: File
+    APP1_C:
+      attributes:
+        id: APP1_C
+      children:
+      - children:
+        - attributes:
+            id: enabled
+          children:
+          - type: Value
+            value: 'true'
+          type: Boolean
+        - attributes:
+            id: name
+          children:
+          - type: Value
+            value: app_console.c
+          type: String
+        type: Attributes
+      type: File
+    APP2_C:
+      attributes:
+        id: APP2_C
+      children:
+      - children:
+        - attributes:
+            id: enabled
+          children:
+          - type: Value
+            value: 'true'
+          type: Boolean
+        - attributes:
+            id: name
+          children:
+          - type: Value
+            value: app_datalog.c
+          type: String
+        type: Attributes
+      type: File
+    APP3_C:
+      attributes:
+        id: APP3_C
+      children:
+      - children:
+        - attributes:
+            id: enabled
+          children:
+          - type: Value
+            value: 'true'
+          type: Boolean
+        - attributes:
+            id: name
+          children:
+          - type: Value
+            value: app_display.c
+          type: String
+        type: Attributes
+      type: File
+    APP4_C:
+      attributes:
+        id: APP4_C
+      children:
+      - children:
+        - attributes:
+            id: enabled
+          children:
+          - type: Value
+            value: 'true'
+          type: Boolean
+        - attributes:
+            id: name
+          children:
+          - type: Value
+            value: app_energy.c
+          type: String
+        type: Attributes
+      type: File
+    APP5_C:
+      attributes:
+        id: APP5_C
+      children:
+      - children:
+        - attributes:
+            id: enabled
+          children:
+          - type: Value
+            value: 'true'
+          type: Boolean
+        - attributes:
+            id: name
+          children:
+          - type: Value
+            value: app_events.c
+          type: String
+        type: Attributes
+      type: File
+    APP6_C:
+      attributes:
+        id: APP6_C
+      children:
+      - children:
+        - attributes:
+            id: enabled
+          children:
+          - type: Value
+            value: 'true'
+          type: Boolean
+        - attributes:
+            id: name
+          children:
+          - type: Value
+            value: app_dlms.c
+          type: String
+        type: Attributes
+      type: File
+    APP0_H:
+      attributes:
+        id: APP0_H
+      children:
+      - children:
+        - attributes:
+            id: enabled
+          children:
+          - type: Value
+            value: 'true'
+          type: Boolean
+        - attributes:
+            id: name
+          children:
+          - type: Value
+            value: app_metrology.h
+          type: String
+        type: Attributes
+      type: File
+    APP1_H:
+      attributes:
+        id: APP1_H
+      children:
+      - children:
+        - attributes:
+            id: enabled
+          children:
+          - type: Value
+            value: 'true'
+          type: Boolean
+        - attributes:
+            id: name
+          children:
+          - type: Value
+            value: app_console.h
+          type: String
+        type: Attributes
+      type: File
+    APP2_H:
+      attributes:
+        id: APP2_H
+      children:
+      - children:
+        - attributes:
+            id: enabled
+          children:
+          - type: Value
+            value: 'true'
+          type: Boolean
+        - attributes:
+            id: name
+          children:
+          - type: Value
+            value: app_datalog.h
+          type: String
+        type: Attributes
+      type: File
+    APP3_H:
+      attributes:
+        id: APP3_H
+      children:
+      - children:
+        - attributes:
+            id: enabled
+          children:
+          - type: Value
+            value: 'true'
+          type: Boolean
+        - attributes:
+            id: name
+          children:
+          - type: Value
+            value: app_display.h
+          type: String
+        type: Attributes
+      type: File
+    APP4_H:
+      attributes:
+        id: APP4_H
+      children:
+      - children:
+        - attributes:
+            id: enabled
+          children:
+          - type: Value
+            value: 'true'
+          type: Boolean
+        - attributes:
+            id: name
+          children:
+          - type: Value
+            value: app_energy.h
+          type: String
+        type: Attributes
+      type: File
+    APP5_H:
+      attributes:
+        id: APP5_H
+      children:
+      - children:
+        - attributes:
+            id: enabled
+          children:
+          - type: Value
+            value: 'true'
+          type: Boolean
+        - attributes:
+            id: name
+          children:
+          - type: Value
+            value: app_events.h
+          type: String
+        type: Attributes
+      type: File
+    APP6_H:
+      attributes:
+        id: APP6_H
+      children:
+      - children:
+        - attributes:
+            id: enabled
+          children:
+          - type: Value
+            value: 'true'
+          type: Boolean
+        - attributes:
+            id: name
+          children:
+          - type: Value
+            value: app_dlms.h
+          type: String
+        type: Attributes
+      type: File
+    GEN_APP_TASK_NAME_6:
+      attributes:
+        id: GEN_APP_TASK_NAME_6
+        label: Application Name
+      children:
+      - children:
+        - attributes:
+            value: app_dlms
+          type: User
+        type: Values
+      type: String
+  userData: {}

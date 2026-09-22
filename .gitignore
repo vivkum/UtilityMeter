@@ -1,0 +1,30 @@
+# MPLAB X build output directories (inside .X project directories)
+*.X/build/
+*.X/dist/
+*.X/debug/
+*.X/disassembly/
+**/*.X/build/
+**/*.X/dist/
+**/*.X/debug/
+**/*.X/disassembly/
+
+# MPLAB X user-specific machine configuration
+**/nbproject/private/
+
+# Microchip Code Configurator (MCC) backup folders
+**/*.bak*
+
+# Object and dependency files
+*.o
+*.o.d
+
+# OS generated files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Editor & IDE directories
+.vscode/
+.idea/
+*.swp
+*~

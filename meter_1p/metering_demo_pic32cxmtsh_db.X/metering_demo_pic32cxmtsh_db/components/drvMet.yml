@@ -1,0 +1,301 @@
+configVersion: 1.0.0
+componentName: drvMet
+coreVersion: 5.8.3
+device: PIC32CX2051MTSH128
+library: []
+dependency:
+- dependencyPackage: class com.microchip.mcc.harmony.HarmonyModule
+  name: drvMet
+  type: module
+  version: ''
+- dependencyPackage: ''
+  devMode: true
+  name: smartenergy_metrology
+  type: package
+  version: v2.0.0
+customDataClassName: com.microchip.utils_mh3.utils.persistence.CustomModuleData
+data:
+  attachments: {}
+  elementPosition:
+    attributes:
+      id: __ROOTVIEW
+    children:
+    - children:
+      - attributes:
+          id: drvMet
+          x: '526'
+          y: '195'
+        type: ElementPosition
+      type: ElementPositions
+    type: ComponentGraph
+  symbols:
+    DRV_MET_CHANNEL_SENSOR_I_1:
+      attributes:
+        id: DRV_MET_CHANNEL_SENSOR_I_1
+      children:
+      - children:
+        - attributes:
+            value: '1'
+          type: User
+        type: Values
+      type: KeyValueSet
+    DRV_MET_CHANNEL_SENSOR_I_3:
+      attributes:
+        id: DRV_MET_CHANNEL_SENSOR_I_3
+      children:
+      - children:
+        - attributes:
+            value: '1'
+          type: User
+        type: Values
+      type: KeyValueSet
+    DRV_MET_CHANNEL_SENSOR_V_2:
+      attributes:
+        id: DRV_MET_CHANNEL_SENSOR_V_2
+      children:
+      - children:
+        - attributes:
+            value: '1'
+          type: User
+        type: Values
+      type: KeyValueSet
+    DRV_MET_CHANNEL_SENSOR_V_4:
+      attributes:
+        id: DRV_MET_CHANNEL_SENSOR_V_4
+      children:
+      - children:
+        - attributes:
+            value: '1'
+          type: User
+        type: Values
+      type: KeyValueSet
+    DRV_MET_I_A_EN:
+      attributes:
+        id: DRV_MET_I_A_EN
+      children:
+      - children:
+        - attributes:
+            id: drvMet
+            value: 'true'
+          type: Dynamic
+        type: Values
+      type: Boolean
+    DRV_MET_I_B_EN:
+      attributes:
+        id: DRV_MET_I_B_EN
+      children:
+      - children:
+        - attributes:
+            id: drvMet
+            value: 'true'
+          type: Dynamic
+        type: Values
+      type: Boolean
+    DRV_MET_I_C_EN:
+      attributes:
+        id: DRV_MET_I_C_EN
+      children:
+      - children:
+        - attributes:
+            id: drvMet
+            value: 'false'
+          type: Dynamic
+        type: Values
+      type: Boolean
+    DRV_MET_I_N_EN:
+      attributes:
+        id: DRV_MET_I_N_EN
+      children:
+      - children:
+        - attributes:
+            id: drvMet
+            value: 'false'
+          type: Dynamic
+        type: Values
+      type: Boolean
+    DRV_MET_NOTIFY_FULL_CYCLE:
+      attributes:
+        id: DRV_MET_NOTIFY_FULL_CYCLE
+      children:
+      - children:
+        - attributes:
+            value: 'true'
+          type: User
+        type: Values
+      type: Boolean
+    DRV_MET_NOTIFY_HALF_CYCLE:
+      attributes:
+        id: DRV_MET_NOTIFY_HALF_CYCLE
+      children:
+      - children:
+        - attributes:
+            value: 'true'
+          type: User
+        type: Values
+      type: Boolean
+    DRV_MET_REG_CAPTURE_BUFFER_SIZE:
+      attributes:
+        id: DRV_MET_REG_CAPTURE_BUFFER_SIZE
+      children:
+      - children:
+        - attributes:
+            id: drvMet
+            value: '16000'
+          type: Dynamic
+        type: Values
+      type: Integer
+    DRV_MET_REG_KIA:
+      attributes:
+        id: DRV_MET_REG_KIA
+      children:
+      - children:
+        - attributes:
+            id: drvMet
+            value: '632099'
+          type: Dynamic
+        type: Values
+      type: Hex
+    DRV_MET_REG_KIB:
+      attributes:
+        id: DRV_MET_REG_KIB
+      children:
+      - children:
+        - attributes:
+            id: drvMet
+            value: '632099'
+          type: Dynamic
+        type: Values
+      type: Hex
+    DRV_MET_REG_KVA:
+      attributes:
+        id: DRV_MET_REG_KVA
+      children:
+      - children:
+        - attributes:
+            id: drvMet
+            value: '1690624'
+          type: Dynamic
+        type: Values
+      type: Hex
+    DRV_MET_REG_KVB:
+      attributes:
+        id: DRV_MET_REG_KVB
+      children:
+      - children:
+        - attributes:
+            id: drvMet
+            value: '1690624'
+          type: Dynamic
+        type: Values
+      type: Hex
+    DRV_MET_REG_MT:
+      attributes:
+        id: DRV_MET_REG_MT
+      children:
+      - children:
+        - attributes:
+            id: drvMet
+            value: '204'
+          type: Dynamic
+        type: Values
+      type: Hex
+    DRV_MET_REG_WAVEFORM_CAPTURE:
+      attributes:
+        id: DRV_MET_REG_WAVEFORM_CAPTURE
+      children:
+      - children:
+        - attributes:
+            id: drvMet
+            value: '2147484416'
+          type: Dynamic
+        type: Values
+      type: Hex
+    DRV_MET_V_A_EN:
+      attributes:
+        id: DRV_MET_V_A_EN
+      children:
+      - children:
+        - attributes:
+            id: drvMet
+            value: 'true'
+          type: Dynamic
+        type: Values
+      type: Boolean
+    DRV_MET_V_B_EN:
+      attributes:
+        id: DRV_MET_V_B_EN
+      children:
+      - children:
+        - attributes:
+            id: drvMet
+            value: 'true'
+          type: Dynamic
+        type: Values
+      type: Boolean
+    DRV_MET_V_C_EN:
+      attributes:
+        id: DRV_MET_V_C_EN
+      children:
+      - children:
+        - attributes:
+            id: drvMet
+            value: 'false'
+          type: Dynamic
+        type: Values
+      type: Boolean
+    DRV_MET_V_D_EN:
+      attributes:
+        id: DRV_MET_V_D_EN
+      children:
+      - children:
+        - attributes:
+            id: drvMet
+            value: 'false'
+          type: Dynamic
+        type: Values
+      type: Boolean
+    REG_MET_CONF_K_CH_1:
+      attributes:
+        id: REG_MET_CONF_K_CH_1
+      children:
+      - children:
+        - attributes:
+            id: drvMet
+            value: '632099'
+          type: Dynamic
+        type: Values
+      type: Hex
+    REG_MET_CONF_K_CH_2:
+      attributes:
+        id: REG_MET_CONF_K_CH_2
+      children:
+      - children:
+        - attributes:
+            id: drvMet
+            value: '1690624'
+          type: Dynamic
+        type: Values
+      type: Hex
+    REG_MET_CONF_K_CH_3:
+      attributes:
+        id: REG_MET_CONF_K_CH_3
+      children:
+      - children:
+        - attributes:
+            id: drvMet
+            value: '632099'
+          type: Dynamic
+        type: Values
+      type: Hex
+    REG_MET_CONF_K_CH_4:
+      attributes:
+        id: REG_MET_CONF_K_CH_4
+      children:
+      - children:
+        - attributes:
+            id: drvMet
+            value: '1690624'
+          type: Dynamic
+        type: Values
+      type: Hex
+  userData: {}

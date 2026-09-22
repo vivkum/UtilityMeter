@@ -1,0 +1,1246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gurux GXDLMSDirector Testing Guide - PIC32CXMTC DLMS over FLEXCOM1</title>
+  <style>
+    :root {
+      --bg-primary: #0b0f19;
+      --bg-secondary: #131d31;
+      --bg-tertiary: #1e2c47;
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+      --accent: #38bdf8;
+      --accent-hover: #0ea5e9;
+      --accent-glow: rgba(56, 189, 248, 0.25);
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --purple: #a855f7;
+      --border: #263554;
+      --card-bg: rgba(19, 29, 49, 0.75);
+      --code-bg: #070a12;
+      --hl-flag: #ec4899;
+      --hl-addr: #3b82f6;
+      --hl-ctrl: #eab308;
+      --hl-llc: #8b5cf6;
+      --hl-apdu: #10b981;
+      --hl-gmac: #f97316;
+      --hl-fcs: #06b6d4;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-primary);
+      color: var(--text-main);
+      line-height: 1.6;
+      padding-bottom: 90px;
+    }
+
+    /* Header */
+    header {
+      background: linear-gradient(135deg, #090d16 0%, #17233d 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 1.75rem 2rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(12px);
+    }
+
+    .header-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .title-area h1 {
+      font-size: 1.6rem;
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      background: linear-gradient(to right, #38bdf8, #818cf8, #c084fc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .title-area p {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      margin-top: 0.25rem;
+    }
+
+    .badges {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-top: 0.5rem;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.25rem 0.65rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .badge-cyan { background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); }
+    .badge-green { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .badge-purple { background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3); }
+    .badge-amber { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+
+    /* Layout */
+    .container {
+      max-width: 1400px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+    }
+
+    /* Tabs Navigation */
+    .tab-bar {
+      display: flex;
+      gap: 0.5rem;
+      background: var(--bg-secondary);
+      padding: 0.4rem;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      margin-bottom: 2rem;
+      overflow-x: auto;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 0.65rem 1.25rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .tab-btn:hover {
+      color: var(--text-main);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .tab-btn.active {
+      background: var(--accent);
+      color: #0b0f19;
+      box-shadow: 0 0 15px var(--accent-glow);
+    }
+
+    /* Tab Content Panes */
+    .tab-pane {
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .tab-pane.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Cards & Grids */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 2rem;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.5rem;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.25rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.85rem;
+    }
+
+    .card-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      color: var(--accent);
+    }
+
+    /* Diagram Styles */
+    .wire-diagram {
+      background: #070b14;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin: 1rem 0;
+    }
+
+    .wire-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.75rem 1rem;
+      background: var(--bg-secondary);
+      border-radius: 8px;
+      font-family: monospace;
+      font-size: 0.95rem;
+      border-left: 4px solid var(--accent);
+    }
+
+    .wire-pin {
+      font-weight: bold;
+      color: var(--warning);
+    }
+
+    .wire-arrow {
+      color: var(--accent);
+      font-weight: bold;
+    }
+
+    /* Simulated GXDLMSDirector Window */
+    .gx-window {
+      background: #1e1e1e;
+      border: 1px solid #3c3c3c;
+      border-radius: 10px;
+      overflow: hidden;
+      font-family: "Segoe UI", Tahoma, sans-serif;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      margin: 1.5rem 0;
+    }
+
+    .gx-titlebar {
+      background: #2d2d2d;
+      padding: 0.5rem 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #3c3c3c;
+      font-size: 0.85rem;
+      color: #cccccc;
+    }
+
+    .gx-dots {
+      display: flex;
+      gap: 6px;
+    }
+
+    .gx-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+    .gx-red { background: #ff5f56; }
+    .gx-yellow { background: #ffbd2e; }
+    .gx-green { background: #27c93f; }
+
+    .gx-body {
+      padding: 1.25rem;
+      background: #252526;
+      color: #cccccc;
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      gap: 1rem;
+    }
+
+    @media (max-width: 860px) {
+      .gx-body { grid-template-columns: 1fr; }
+    }
+
+    .gx-sidebar {
+      background: #1e1e1e;
+      border-radius: 6px;
+      padding: 0.75rem;
+      border: 1px solid #333;
+    }
+
+    .gx-tree-item {
+      padding: 0.4rem 0.6rem;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #ccc;
+    }
+
+    .gx-tree-item.active {
+      background: #094771;
+      color: #fff;
+    }
+
+    .gx-form {
+      display: grid;
+      grid-template-columns: 180px 1fr;
+      gap: 0.75rem;
+      align-items: center;
+      font-size: 0.88rem;
+    }
+
+    .gx-label {
+      color: #9cdcfe;
+      font-weight: 500;
+    }
+
+    .gx-input {
+      background: #3c3c3c;
+      border: 1px solid #555;
+      color: #fff;
+      padding: 0.35rem 0.6rem;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 0.85rem;
+      width: 100%;
+    }
+
+    .gx-input:focus {
+      border-color: var(--accent);
+      outline: none;
+    }
+
+    .gx-btn {
+      background: #0e639c;
+      color: #fff;
+      border: none;
+      padding: 0.45rem 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.85rem;
+      transition: background 0.2s;
+    }
+
+    .gx-btn:hover { background: #1177bb; }
+
+    /* Hex Protocol Inspector */
+    .hex-log {
+      background: #090d16;
+      border: 1px solid #222d46;
+      border-radius: 8px;
+      padding: 1rem;
+      font-family: "Fira Code", monospace;
+      font-size: 0.85rem;
+      overflow-x: auto;
+      margin: 1rem 0;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    .hl-flag { color: var(--hl-flag); font-weight: bold; }
+    .hl-addr { color: var(--hl-addr); font-weight: bold; }
+    .hl-ctrl { color: var(--hl-ctrl); font-weight: bold; }
+    .hl-llc { color: var(--hl-llc); font-weight: bold; }
+    .hl-apdu { color: var(--hl-apdu); font-weight: bold; }
+    .hl-gmac { color: var(--hl-gmac); font-weight: bold; }
+    .hl-fcs { color: var(--hl-fcs); font-weight: bold; }
+
+    .hex-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.85rem;
+      margin-top: 0.75rem;
+      font-size: 0.8rem;
+    }
+
+    .hex-legend span {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .legend-box {
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+    }
+
+    /* Tables */
+    table.data-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+      font-size: 0.88rem;
+    }
+
+    table.data-table th, table.data-table td {
+      padding: 0.75rem 1rem;
+      border: 1px solid var(--border);
+      text-align: left;
+    }
+
+    table.data-table th {
+      background: var(--bg-tertiary);
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    table.data-table tr:hover {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .copy-btn {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      color: var(--accent);
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.75rem;
+      margin-left: 0.5rem;
+      transition: all 0.2s;
+    }
+
+    .copy-btn:hover {
+      background: var(--accent);
+      color: #0b0f19;
+    }
+
+    /* Step Sequence */
+    .step-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      margin: 1rem 0;
+    }
+
+    .step-item {
+      display: flex;
+      gap: 1rem;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      padding: 1.25rem;
+      border-radius: 10px;
+    }
+
+    .step-num {
+      width: 36px;
+      height: 36px;
+      background: var(--accent);
+      color: #0b0f19;
+      font-weight: 800;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .step-content h3 {
+      font-size: 1.05rem;
+      margin-bottom: 0.35rem;
+      color: #fff;
+    }
+
+    .step-content p {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    .callout {
+      padding: 1rem 1.25rem;
+      border-radius: 8px;
+      margin: 1rem 0;
+      border-left: 4px solid;
+      font-size: 0.9rem;
+    }
+
+    .callout-info { background: rgba(56, 189, 248, 0.1); border-color: var(--accent); color: #bae6fd; }
+    .callout-warn { background: rgba(245, 158, 11, 0.1); border-color: var(--warning); color: #fde68a; }
+    .callout-success { background: rgba(16, 185, 129, 0.1); border-color: var(--success); color: #a7f3d0; }
+    .callout-danger { background: rgba(239, 68, 68, 0.1); border-color: var(--danger); color: #fecaca; }
+
+    /* Interactive Frame Switcher */
+    .frame-picker {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .frame-btn {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      padding: 0.4rem 0.8rem;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      font-weight: 500;
+    }
+
+    .frame-btn.active {
+      background: var(--accent);
+      color: #0b0f19;
+      border-color: var(--accent);
+      font-weight: bold;
+    }
+
+    /* Filter search box */
+    .search-box {
+      width: 100%;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      color: #fff;
+      padding: 0.6rem 1rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      font-size: 0.9rem;
+    }
+
+    .search-box:focus {
+      border-color: var(--accent);
+      outline: none;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="header-container">
+      <div class="title-area">
+        <h1>
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:#38bdf8;">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+          </svg>
+          Gurux GXDLMSDirector Testing Visualizer
+        </h1>
+        <p>Complete Step-by-Step Test, Calibration & Verification Guide for PIC32CXMTC DLMS Stack</p>
+        <div class="badges">
+          <span class="badge badge-cyan">PIC32CX2051MTC128</span>
+          <span class="badge badge-purple">FLEXCOM1 UART (9600 8-N-1)</span>
+          <span class="badge badge-green">Security Suite 0 / HLS 5</span>
+          <span class="badge badge-amber">IEC 62056-46 HDLC</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+
+    <!-- Navigation Tabs -->
+    <div class="tab-bar">
+      <button class="tab-btn active" onclick="switchTab('tab-setup')">
+        <span>🔌</span> 1. Hardware & Wiring
+      </button>
+      <button class="tab-btn" onclick="switchTab('tab-quick')">
+        <span>⚡</span> 2. Quick Smoke Test (Public SAP 0x10)
+      </button>
+      <button class="tab-btn" onclick="switchTab('tab-suite0')">
+        <span>🔒</span> 3. Security Suite 0 (HLS 5 GMAC)
+      </button>
+      <button class="tab-btn" onclick="switchTab('tab-frames')">
+        <span>🔍</span> 4. Interactive Frame Inspector
+      </button>
+      <button class="tab-btn" onclick="switchTab('tab-obis')">
+        <span>📊</span> 5. OBIS Code Dictionary
+      </button>
+      <button class="tab-btn" onclick="switchTab('tab-trouble')">
+        <span>🛠️</span> 6. Troubleshooting Checklist
+      </button>
+    </div>
+
+    <!-- =================================================================== -->
+    <!-- TAB 1: HARDWARE & WIRING                                            -->
+    <!-- =================================================================== -->
+    <div id="tab-setup" class="tab-pane active">
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span>🔌</span> Physical Wiring: PC to PIC32CXMTC</div>
+            <span class="badge badge-amber">3.3V TTL Levels</span>
+          </div>
+          <p>Connect your USB-to-UART adapter (e.g. FTDI, CP2102, or CH340) to the PIC32CXMTC Evaluation Board as shown below:</p>
+
+          <div class="wire-diagram">
+            <div class="wire-row">
+              <span>PC USB-to-UART (Adapter)</span>
+              <span class="wire-arrow">─── CONNECT ───▶</span>
+              <span>PIC32CXMTC Header Pin</span>
+            </div>
+            <div class="wire-row" style="border-left-color: #10b981;">
+              <span><strong>Adapter RXD</strong> (Yellow / White)</span>
+              <span class="wire-arrow">◄──────</span>
+              <span class="wire-pin">Pin 5 (DLMS_UTX)</span>
+            </div>
+            <div class="wire-row" style="border-left-color: #3b82f6;">
+              <span><strong>Adapter TXD</strong> (Orange / Green)</span>
+              <span class="wire-arrow">──────►</span>
+              <span class="wire-pin">Pin 6 (DLMS_URX)</span>
+            </div>
+            <div class="wire-row" style="border-left-color: #64748b;">
+              <span><strong>Adapter GND</strong> (Black)</span>
+              <span class="wire-arrow">◄─────►</span>
+              <span class="wire-pin">MCU GND (Common Ground)</span>
+            </div>
+          </div>
+
+          <div class="callout callout-warn">
+            <strong>⚠️ IMPORTANT:</strong> Ensure your USB-UART dongle is set to <strong>3.3V I/O logic level</strong>. Connecting a 5V TTL adapter directly without level-shifting will damage the PIC32CXMTC GPIOs!
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span>⚙️</span> Firmware Verification Status</div>
+            <span class="badge badge-green">Ready to Run</span>
+          </div>
+          <p>The firmware running in your PIC32CXMTC includes the complete driver pipeline:</p>
+          <ul style="margin: 1rem 0 1rem 1.5rem; color: var(--text-muted); font-size: 0.9rem;">
+            <li><strong style="color: #fff;">FLEXCOM1 Initialization:</strong> Configured automatically in <code>SYS_Initialize()</code> at 9600 bps 8-N-1.</li>
+            <li><strong style="color: #fff;">Interrupt Handler:</strong> Registered via <code>FLEXCOM1_USART_ReadCallbackRegister()</code> with a 2048-byte lock-free circular buffer.</li>
+            <li><strong style="color: #fff;">Periodic Task:</strong> Polled continuously via <code>APP_DLMS_Tasks()</code> in <code>SYS_Tasks()</code>.</li>
+            <li><strong style="color: #fff;">Live Metrology:</strong> Registered adapter dynamically queries <code>APP_METROLOGY_GetMeasure()</code> and <code>APP_ENERGY_GetCurrentEnergy()</code>.</li>
+          </ul>
+
+          <div class="callout callout-success">
+            <strong>Diagnostic Counters:</strong> You can read <code>app_dlmsData.rx_bytes</code>, <code>tx_bytes</code>, and <code>rx_errors</code> in the MPLAB X watch window at any time to monitor hardware traffic!
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- =================================================================== -->
+    <!-- TAB 2: QUICK SMOKE TEST (PUBLIC SAP 0x10)                           -->
+    <!-- =================================================================== -->
+    <div id="tab-quick" class="tab-pane">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><span>⚡</span> Step-by-Step Smoke Test (Public Client - No Encryption)</div>
+          <span class="badge badge-cyan">Smoke Test</span>
+        </div>
+        <p>Use the Public Client (SAP <code>0x10</code> / 16) first to verify the physical UART link and HDLC framing before turning on AES-GCM encryption.</p>
+
+        <!-- Mockup of GXDLMSDirector Properties Window -->
+        <div class="gx-window">
+          <div class="gx-titlebar">
+            <div class="gx-dots">
+              <span class="gx-dot gx-red"></span>
+              <span class="gx-dot gx-yellow"></span>
+              <span class="gx-dot gx-green"></span>
+            </div>
+            <span>GXDLMSDirector - Device Properties [Mode: Public Client]</span>
+            <span>PIC32CXMTC Meter</span>
+          </div>
+          <div class="gx-body">
+            <div class="gx-sidebar">
+              <div class="gx-tree-item active">📁 General Properties</div>
+              <div class="gx-tree-item">🔑 Security Setup</div>
+              <div class="gx-tree-item">⚡ Serial Connection</div>
+            </div>
+            <div class="gx-form">
+              <div class="gx-label">Manufacturer:</div>
+              <input class="gx-input" value="Generic" readonly>
+
+              <div class="gx-label">Media:</div>
+              <input class="gx-input" value="Serial Port" readonly>
+
+              <div class="gx-label">Port Name:</div>
+              <input class="gx-input" value="COM3 (Select your USB-UART COM port)">
+
+              <div class="gx-label">Baud Rate:</div>
+              <input class="gx-input" value="9600 (8-N-1)" readonly>
+
+              <div class="gx-label">Interface:</div>
+              <input class="gx-input" value="HDLC" readonly>
+
+              <div class="gx-label">Logical Name Referencing:</div>
+              <input class="gx-input" value="True (LN)" readonly>
+
+              <div class="gx-label">Client Address (Hex/Dec):</div>
+              <input class="gx-input" style="background:#1e3a5f; border-color:#38bdf8;" value="16 (Hex: 0x10 - Public Client)" readonly>
+
+              <div class="gx-label">Logical Server Address:</div>
+              <input class="gx-input" value="1" readonly>
+
+              <div class="gx-label">Physical Server Address:</div>
+              <input class="gx-input" value="1" readonly>
+
+              <div class="gx-label">Authentication:</div>
+              <input class="gx-input" value="None" readonly>
+            </div>
+          </div>
+        </div>
+
+        <div class="step-list">
+          <div class="step-item">
+            <div class="step-num">1</div>
+            <div class="step-content">
+              <h3>Configure Device Settings in GXDLMSDirector</h3>
+              <p>In GXDLMSDirector, click <strong>Device ➔ Add Device</strong>. Match every parameter as displayed in the mockup above: Client Address = <code>16</code>, Logical Server = <code>1</code>, Physical Server = <code>1</code>, Interface = <code>HDLC</code>, Authentication = <code>None</code>.</p>
+            </div>
+          </div>
+          <div class="step-item">
+            <div class="step-num">2</div>
+            <div class="step-content">
+              <h3>Click Connect</h3>
+              <p>Click the green <strong>Connect</strong> button on the toolbar. The log view will immediately display:</p>
+              <div class="hex-log"><span class="hl-ctrl">TX (Client):</span> <span class="hl-flag">7E</span> <span class="hl-addr">A0 07 03 21</span> 93 <span class="hl-fcs">AF 01</span> <span class="hl-flag">7E</span>  <span style="color:#64748b;">(SNRM - Set Normal Response Mode)</span>
+<span class="hl-apdu">RX (Meter):</span>  <span class="hl-flag">7E</span> <span class="hl-addr">A0 0A 21 02 03</span> 73 <span class="hl-fcs">E8 92</span> <span class="hl-flag">7E</span>  <span style="color:#64748b;">(UA - Unnumbered Acknowledge, Link Connected!)</span></div>
+            </div>
+          </div>
+          <div class="step-item">
+            <div class="step-num">3</div>
+            <div class="step-content">
+              <h3>Handling "GetObjects Failed" (Expected Behavior)</h3>
+              <p>Right after connecting, GXDLMSDirector may display a notification:</p>
+              <div class="callout callout-warn" style="margin: 0.5rem 0;">
+                <code>GetObjects Failed. Access Error: Device reports a undefined object</code>
+              </div>
+              <p><strong>This is completely normal and expected.</strong> In DLMS, <code>GetObjects</code> is an optional feature where the client requests the dynamic Association View table (<code>object_list</code>) to auto-populate the GUI tree. Lightweight embedded firmware omits this dynamic table to save Flash and RAM. <strong>Your connection is alive and working properly!</strong></p>
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-num">4</div>
+            <div class="step-content">
+              <h3>Add COSEM Objects Manually (Edit ➔ Add Object)</h3>
+              <p>Because the "Generic" device profile starts with an empty tree, add the objects you want to read:</p>
+              <ol style="margin: 0.5rem 0 0.5rem 1.5rem; color: var(--text-muted); font-size: 0.9rem;">
+                <li>Click on your device name (e.g. <code>Generic</code>) in the left tree so it is highlighted.</li>
+                <li>Go to the top menu bar and click <strong>Edit ➔ Add object...</strong> (or right-click device ➔ <strong>Add object...</strong>).</li>
+                <li>In the dialog, configure your first object:
+                  <ul style="margin: 0.35rem 0 0.35rem 1.5rem;">
+                    <li><strong>Object type:</strong> Select <code>Data</code> (Class ID 1)</li>
+                    <li><strong>Logical Name:</strong> Enter <code>0.0.96.1.0.255</code> (Meter Serial Number)</li>
+                  </ul>
+                </li>
+                <li>Click <strong>OK</strong>. A folder named <strong>Data</strong> appears with <code>0.0.96.1.0.255</code> inside.</li>
+                <li>Repeat for Voltage Phase A:
+                  <ul style="margin: 0.35rem 0 0.35rem 1.5rem;">
+                    <li><strong>Object type:</strong> Select <code>Register</code> (Class ID 3)</li>
+                    <li><strong>Logical Name:</strong> Enter <code>1.0.32.7.0.255</code> (Voltage Phase A RMS)</li>
+                  </ul>
+                </li>
+              </ol>
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-num">5</div>
+            <div class="step-content">
+              <h3>Read Serial Number and Live Metrology</h3>
+              <p>In the left tree, right-click any added object and select <strong>Read</strong>:</p>
+              <ul style="margin: 0.5rem 0 0.5rem 1.5rem; color: var(--text-muted); font-size: 0.9rem;">
+                <li>Right-click <strong>Data ➔ 0.0.96.1.0.255</strong> and click <strong>Read</strong> $\rightarrow$ Value displays <code>PIC32CX00001</code>.</li>
+                <li>Right-click <strong>Register ➔ 1.0.32.7.0.255</strong> and click <strong>Read</strong> $\rightarrow$ Value displays live ADC voltage (e.g. <code>230.2 V</code>).</li>
+              </ul>
+              <div class="callout callout-info" style="margin-top: 0.75rem;">
+                <strong>💡 Pro Tip:</strong> Click <strong>File ➔ Save</strong> in GXDLMSDirector to save your project as <code>PIC32CXMTC.gxc</code>. Next time you open this file, all your objects will already be in the tree ready to read without needing to re-add them!
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- =================================================================== -->
+    <!-- TAB 3: SECURITY SUITE 0 (HLS 5 GMAC)                                -->
+    <!-- =================================================================== -->
+    <div id="tab-suite0" class="tab-pane">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><span>🔒</span> Production Security Suite 0 Testing (High Level Security 5 GMAC)</div>
+          <span class="badge badge-purple">Suite 0 / AES-GCM-128</span>
+        </div>
+        <p>Security Suite 0 utilizes 4-pass mutual authentication (HLS 5 with AES-GMAC) and full AES-GCM-128 authenticated encryption for reading and modifying metrology registers.</p>
+
+        <!-- Mockup of GXDLMSDirector Suite 0 Properties Window -->
+        <div class="gx-window">
+          <div class="gx-titlebar">
+            <div class="gx-dots">
+              <span class="gx-dot gx-red"></span>
+              <span class="gx-dot gx-yellow"></span>
+              <span class="gx-dot gx-green"></span>
+            </div>
+            <span>GXDLMSDirector - Device Properties [Mode: Security Suite 0 Management Client]</span>
+            <span>PIC32CXMTC Meter</span>
+          </div>
+          <div class="gx-body">
+            <div class="gx-sidebar">
+              <div class="gx-tree-item">📁 General Properties</div>
+              <div class="gx-tree-item active">🔑 Security Setup (Suite 0)</div>
+              <div class="gx-tree-item">⚡ Serial Connection</div>
+            </div>
+            <div class="gx-form">
+              <div class="gx-label">Client Address:</div>
+              <input class="gx-input" style="background:#2e1065; border-color:#a855f7;" value="1 (Hex: 0x01 - Management Client)" readonly>
+
+              <div class="gx-label">Authentication:</div>
+              <input class="gx-input" value="High (GMAC)" readonly>
+
+              <div class="gx-label">Security Suite:</div>
+              <input class="gx-input" value="Suite 0" readonly>
+
+              <div class="gx-label">Security Policy:</div>
+              <input class="gx-input" value="Authentication and Encryption" readonly>
+
+              <div class="gx-label">Server System Title:</div>
+              <input class="gx-input" value="4D 43 48 00 00 00 01 01 (ASCII: MCH.....)" readonly>
+
+              <div class="gx-label">Client System Title:</div>
+              <input class="gx-input" value="47 58 44 00 00 00 00 01 (ASCII: GXD.....)" readonly>
+
+              <div class="gx-label">Block Cipher Key (GUEK):</div>
+              <input class="gx-input" value="00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F" readonly>
+
+              <div class="gx-label">Authentication Key (AK):</div>
+              <input class="gx-input" value="D0 D1 D2 D3 D4 D5 D6 D7 D8 D9 DA DB DC DD DE DF" readonly>
+
+              <div class="gx-label">Invocation Counter:</div>
+              <input class="gx-input" value="Validate Invocation Counter = Checked" readonly>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout callout-info">
+          <strong>Handshake Mechanism:</strong>
+          When you click <strong>Connect</strong> in Suite 0 mode:
+          <ol style="margin-left: 1.5rem; margin-top: 0.5rem;">
+            <li><strong>SNRM ➔ UA:</strong> HDLC Data Link layer establishes connection.</li>
+            <li><strong>AARQ ➔ AARE:</strong> Client sends 16-byte random challenge $CtoS$. Meter generates 16-byte random challenge $StoC$ and responds.</li>
+            <li><strong>HLS 5 ACTION.req:</strong> Client executes <code>reply_to_HLS_authentication</code> with $f(StoC)$ computed via AES-GMAC. Meter verifies tag.</li>
+            <li><strong>HLS 5 ACTION.resp:</strong> Meter sends mutual authentication tag $f(CtoS)$ back to client.</li>
+            <li><strong>Mutual Association Established:</strong> All subsequent GET/SET requests are encrypted with AES-GCM (Security Control byte <code>0x30</code>).</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+
+    <!-- =================================================================== -->
+    <!-- TAB 4: INTERACTIVE FRAME INSPECTOR                                  -->
+    <!-- =================================================================== -->
+    <div id="tab-frames" class="tab-pane">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><span>🔍</span> Interactive HDLC & Suite 0 Packet Decoder</div>
+          <span class="badge badge-green">Packet Analyzer</span>
+        </div>
+        <p>Select any DLMS communication phase to inspect the byte structure, HDLC envelope, and Security Suite 0 ciphering:</p>
+
+        <div class="frame-picker">
+          <button class="frame-btn active" onclick="showFrame('snrm')">1. HDLC SNRM / UA</button>
+          <button class="frame-btn" onclick="showFrame('aarq')">2. AARQ / AARE Handshake</button>
+          <button class="frame-btn" onclick="showFrame('hls')">3. HLS 5 GMAC Action</button>
+          <button class="frame-btn" onclick="showFrame('glo-get')">4. GLO-GET Request & Response</button>
+        </div>
+
+        <div id="frame-display" class="hex-log">
+          <!-- Populated by JavaScript -->
+        </div>
+
+        <div class="hex-legend">
+          <span><span class="legend-box" style="background:var(--hl-flag);"></span> HDLC Flag (0x7E)</span>
+          <span><span class="legend-box" style="background:var(--hl-addr);"></span> Addresses (Dest & Source)</span>
+          <span><span class="legend-box" style="background:var(--hl-ctrl);"></span> Control & Format</span>
+          <span><span class="legend-box" style="background:var(--hl-llc);"></span> LLC Header (0xE6 0xE6 0x00)</span>
+          <span><span class="legend-box" style="background:var(--hl-apdu);"></span> xDLMS / COSEM APDU</span>
+          <span><span class="legend-box" style="background:var(--hl-gmac);"></span> Suite 0 GMAC Tag / IC</span>
+          <span><span class="legend-box" style="background:var(--hl-fcs);"></span> CRC-16 Checksum (FCS)</span>
+        </div>
+
+        <div id="frame-explanation" style="margin-top: 1.25rem; background: var(--bg-secondary); padding: 1.25rem; border-radius: 8px; border: 1px solid var(--border);">
+          <!-- Populated by JavaScript -->
+        </div>
+      </div>
+    </div>
+
+    <!-- =================================================================== -->
+    <!-- TAB 5: OBIS CODE DICTIONARY                                         -->
+    <!-- =================================================================== -->
+    <div id="tab-obis" class="tab-pane">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><span>📊</span> PIC32CXMTC COSEM Object & OBIS Directory</div>
+          <span class="badge badge-cyan">Interactive Directory</span>
+        </div>
+        <p>Type in the box below to filter OBIS codes, metrics, or COSEM classes:</p>
+        <input type="text" id="obis-search" class="search-box" placeholder="Search by name (e.g. Voltage, Current, Energy, Demand, Clock)..." oninput="filterObis()">
+
+        <table class="data-table" id="obis-table">
+          <thead>
+            <tr>
+              <th>Class</th>
+              <th>OBIS Code</th>
+              <th>Description</th>
+              <th>Unit / Type</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Class 1 (Data)</td>
+              <td><code>0.0.96.1.0.255</code></td>
+              <td>Meter Serial Number</td>
+              <td>Visible String</td>
+              <td><button class="copy-btn" onclick="copyText('0.0.96.1.0.255')">Copy OBIS</button></td>
+            </tr>
+            <tr>
+              <td>Class 1 (Data)</td>
+              <td><code>1.0.0.2.0.255</code></td>
+              <td>Firmware Version</td>
+              <td>Visible String</td>
+              <td><button class="copy-btn" onclick="copyText('1.0.0.2.0.255')">Copy OBIS</button></td>
+            </tr>
+            <tr>
+              <td>Class 3 (Register)</td>
+              <td><code>1.0.32.7.0.255</code></td>
+              <td>Voltage Phase A RMS</td>
+              <td>Volts (V) [Float32]</td>
+              <td><button class="copy-btn" onclick="copyText('1.0.32.7.0.255')">Copy OBIS</button></td>
+            </tr>
+            <tr>
+              <td>Class 3 (Register)</td>
+              <td><code>1.0.52.7.0.255</code></td>
+              <td>Voltage Phase B RMS</td>
+              <td>Volts (V) [Float32]</td>
+              <td><button class="copy-btn" onclick="copyText('1.0.52.7.0.255')">Copy OBIS</button></td>
+            </tr>
+            <tr>
+              <td>Class 3 (Register)</td>
+              <td><code>1.0.72.7.0.255</code></td>
+              <td>Voltage Phase C RMS</td>
+              <td>Volts (V) [Float32]</td>
+              <td><button class="copy-btn" onclick="copyText('1.0.72.7.0.255')">Copy OBIS</button></td>
+            </tr>
+            <tr>
+              <td>Class 3 (Register)</td>
+              <td><code>1.0.31.7.0.255</code></td>
+              <td>Current Phase A RMS</td>
+              <td>Amperes (A) [Float32]</td>
+              <td><button class="copy-btn" onclick="copyText('1.0.31.7.0.255')">Copy OBIS</button></td>
+            </tr>
+            <tr>
+              <td>Class 3 (Register)</td>
+              <td><code>1.0.51.7.0.255</code></td>
+              <td>Current Phase B RMS</td>
+              <td>Amperes (A) [Float32]</td>
+              <td><button class="copy-btn" onclick="copyText('1.0.51.7.0.255')">Copy OBIS</button></td>
+            </tr>
+            <tr>
+              <td>Class 3 (Register)</td>
+              <td><code>1.0.71.7.0.255</code></td>
+              <td>Current Phase C RMS</td>
+              <td>Amperes (A) [Float32]</td>
+              <td><button class="copy-btn" onclick="copyText('1.0.71.7.0.255')">Copy OBIS</button></td>
+            </tr>
+            <tr>
+              <td>Class 3 (Register)</td>
+              <td><code>1.0.91.7.0.255</code></td>
+              <td>Neutral Current RMS</td>
+              <td>Amperes (A) [Float32]</td>
+              <td><button class="copy-btn" onclick="copyText('1.0.91.7.0.255')">Copy OBIS</button></td>
+            </tr>
+            <tr>
+              <td>Class 3 (Register)</td>
+              <td><code>1.0.1.7.0.255</code></td>
+              <td>Active Power Total (+P)</td>
+              <td>Watts (W) [Float32]</td>
+              <td><button class="copy-btn" onclick="copyText('1.0.1.7.0.255')">Copy OBIS</button></td>
+            </tr>
+            <tr>
+              <td>Class 3 (Register)</td>
+              <td><code>1.0.3.7.0.255</code></td>
+              <td>Reactive Power Total (+Q)</td>
+              <td>VAr [Float32]</td>
+              <td><button class="copy-btn" onclick="copyText('1.0.3.7.0.255')">Copy OBIS</button></td>
+            </tr>
+            <tr>
+              <td>Class 3 (Register)</td>
+              <td><code>1.0.9.7.0.255</code></td>
+              <td>Apparent Power Total (+S)</td>
+              <td>VA [Float32]</td>
+              <td><button class="copy-btn" onclick="copyText('1.0.9.7.0.255')">Copy OBIS</button></td>
+            </tr>
+            <tr>
+              <td>Class 3 (Register)</td>
+              <td><code>1.0.14.7.0.255</code></td>
+              <td>Grid Frequency</td>
+              <td>Hertz (Hz) [Float32]</td>
+              <td><button class="copy-btn" onclick="copyText('1.0.14.7.0.255')">Copy OBIS</button></td>
+            </tr>
+            <tr>
+              <td>Class 3 (Register)</td>
+              <td><code>1.0.13.7.0.255</code></td>
+              <td>Total Power Factor</td>
+              <td>Dimensionless (-1..+1)</td>
+              <td><button class="copy-btn" onclick="copyText('1.0.13.7.0.255')">Copy OBIS</button></td>
+            </tr>
+            <tr>
+              <td>Class 3 (Register)</td>
+              <td><code>1.0.1.8.0.255</code></td>
+              <td>Active Energy Import (Total)</td>
+              <td>Watt-hours (Wh) [Float64]</td>
+              <td><button class="copy-btn" onclick="copyText('1.0.1.8.0.255')">Copy OBIS</button></td>
+            </tr>
+            <tr>
+              <td>Class 3 (Register)</td>
+              <td><code>1.0.1.8.1.255</code></td>
+              <td>Active Energy Tariff 1</td>
+              <td>Watt-hours (Wh) [Float64]</td>
+              <td><button class="copy-btn" onclick="copyText('1.0.1.8.1.255')">Copy OBIS</button></td>
+            </tr>
+            <tr>
+              <td>Class 3 (Register)</td>
+              <td><code>1.0.1.8.2.255</code></td>
+              <td>Active Energy Tariff 2</td>
+              <td>Watt-hours (Wh) [Float64]</td>
+              <td><button class="copy-btn" onclick="copyText('1.0.1.8.2.255')">Copy OBIS</button></td>
+            </tr>
+            <tr>
+              <td>Class 3 (Register)</td>
+              <td><code>1.0.1.8.3.255</code></td>
+              <td>Active Energy Tariff 3</td>
+              <td>Watt-hours (Wh) [Float64]</td>
+              <td><button class="copy-btn" onclick="copyText('1.0.1.8.3.255')">Copy OBIS</button></td>
+            </tr>
+            <tr>
+              <td>Class 3 (Register)</td>
+              <td><code>1.0.1.8.4.255</code></td>
+              <td>Active Energy Tariff 4</td>
+              <td>Watt-hours (Wh) [Float64]</td>
+              <td><button class="copy-btn" onclick="copyText('1.0.1.8.4.255')">Copy OBIS</button></td>
+            </tr>
+            <tr>
+              <td>Class 4 (Extended Reg)</td>
+              <td><code>1.0.1.6.0.255</code></td>
+              <td>Maximum Demand (+P) & Time</td>
+              <td>Watts + DateTime</td>
+              <td><button class="copy-btn" onclick="copyText('1.0.1.6.0.255')">Copy OBIS</button></td>
+            </tr>
+            <tr>
+              <td>Class 8 (Clock)</td>
+              <td><code>0.0.1.0.0.255</code></td>
+              <td>Hardware RTC Date & Time</td>
+              <td>Octet-String (12 bytes)</td>
+              <td><button class="copy-btn" onclick="copyText('0.0.1.0.0.255')">Copy OBIS</button></td>
+            </tr>
+            <tr>
+              <td>Class 70 (Disconnect)</td>
+              <td><code>0.0.96.3.10.255</code></td>
+              <td>Disconnect Control Relay</td>
+              <td>Boolean / Action (1=Dis, 2=Rec)</td>
+              <td><button class="copy-btn" onclick="copyText('0.0.96.3.10.255')">Copy OBIS</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- =================================================================== -->
+    <!-- TAB 6: TROUBLESHOOTING CHECKLIST                                    -->
+    <!-- =================================================================== -->
+    <div id="tab-trouble" class="tab-pane">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><span>🛠️</span> Diagnostic & Troubleshooting Matrix</div>
+          <span class="badge badge-amber">Self-Healing Guide</span>
+        </div>
+
+        <div class="step-list">
+          <div class="step-item">
+            <div class="step-num" style="background:#ef4444; color:#fff;">!</div>
+            <div class="step-content">
+              <h3>Problem: GXDLMSDirector times out; no reply to SNRM</h3>
+              <p><strong>Root Causes & Solutions:</strong></p>
+              <ul style="margin-left: 1.5rem; margin-top: 0.35rem; color: var(--text-muted); font-size: 0.88rem;">
+                <li><strong style="color:#fff;">TX/RX Swapped:</strong> Pin 5 is <code>DLMS_UTX</code> (connect to PC RX) and Pin 6 is <code>DLMS_URX</code> (connect to PC TX). If swapped, the MCU will never see bytes.</li>
+                <li><strong style="color:#fff;">Missing Common Ground:</strong> The USB-to-UART GND pin must be connected to the PIC32CXMTC board GND.</li>
+                <li><strong style="color:#fff;">Wrong COM Port:</strong> Verify in Windows Device Manager which COM port corresponds to your USB-UART adapter.</li>
+                <li><strong style="color:#fff;">Baud Rate Mismatch:</strong> Must be 9600 bps, 8 bits, No parity, 1 stop bit (8-N-1).</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-num" style="background:#f59e0b; color:#fff;">!</div>
+            <div class="step-content">
+              <h3>Problem: Connection drops during Suite 0 Handshake (HLS 5 Authentication Error)</h3>
+              <p><strong>Root Causes & Solutions:</strong></p>
+              <ul style="margin-left: 1.5rem; margin-top: 0.35rem; color: var(--text-muted); font-size: 0.88rem;">
+                <li><strong style="color:#fff;">Mismatched System Titles:</strong> Server System Title must be <code>4D 43 48 00 00 00 01 01</code>. If the client sends an unknown System Title, GMAC verification will fail.</li>
+                <li><strong style="color:#fff;">Mismatched Authentication Key:</strong> Must be <code>D0 D1 D2 D3 D4 D5 D6 D7 D8 D9 DA DB DC DD DE DF</code>.</li>
+                <li><strong style="color:#fff;">Invocation Counter Replay:</strong> If you reset the meter, the meter's stored client Invocation Counter resets. In GXDLMSDirector, reset the Invocation Counter to <code>0</code> or restart GXDLMSDirector.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-num" style="background:#3b82f6; color:#fff;">i</div>
+            <div class="step-content">
+              <h3>Problem: Metrology values read as 0.0 or simulated values</h3>
+              <p><strong>Root Causes & Solutions:</strong></p>
+              <ul style="margin-left: 1.5rem; margin-top: 0.35rem; color: var(--text-muted); font-size: 0.88rem;">
+                <li><strong style="color:#fff;">Metrology Engine Starting:</strong> The PIC32CXMTC Metrology core takes a few seconds after power-on to load the calibration parameters and DSP binary. During this window, the adapter returns default simulated benchmarks.</li>
+                <li><strong style="color:#fff;">AC Voltage Signal:</strong> If AC mains voltage is not connected to the voltage divider inputs of the evaluation board, voltage and current registers will naturally read 0.0 V.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-num" style="background:#f59e0b; color:#fff;">!</div>
+            <div class="step-content">
+              <h3>Problem: "GetObjects Failed. Access Error: Device reports a undefined object"</h3>
+              <p><strong>Root Causes & Solutions:</strong></p>
+              <ul style="margin-left: 1.5rem; margin-top: 0.35rem; color: var(--text-muted); font-size: 0.88rem;">
+                <li><strong style="color:#fff;">Expected Behavior for Public Client:</strong> The meter does not host the dynamic 700-byte <code>object_list</code> directory in Public mode to save Flash/RAM. The connection itself is fully active and healthy.</li>
+                <li><strong style="color:#fff;">Solution:</strong> Simply use <strong>Edit ➔ Add object...</strong> in GXDLMSDirector to add the OBIS codes you need (e.g. <code>Data ➔ 0.0.96.1.0.255</code>), right-click and click <strong>Read</strong>.</li>
+                <li><strong style="color:#fff;">Permanent Save:</strong> Save your configured meter as <code>PIC32CXMTC.gxc</code> via <strong>File ➔ Save</strong> to prevent GXDLMSDirector from prompting for <code>GetObjects</code> on subsequent launches.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-num" style="background:#ef4444; color:#fff;">!</div>
+            <div class="step-content">
+              <h3>Problem: MPLAB X Programming Error "[Pgm] at 0x1000000, expected 0x2007fff8, got 0x2007ffd8"</h3>
+              <p><strong>Root Causes & Solutions:</strong></p>
+              <ul style="margin-left: 1.5rem; margin-top: 0.35rem; color: var(--text-muted); font-size: 0.88rem;">
+                <li><strong style="color:#fff;">SWD Clock Speed Too Fast:</strong> High-speed clock signal integrity on ribbon cables/jumpers causes SWD verify bit glitches. In project <strong>Properties ➔ Tool ➔ Program Options</strong>, change <strong>Program Speed</strong> from <code>Normal</code> to <strong><code>Low</code></strong> (or reduce frequency to 1.0 MHz / 500 kHz).</li>
+                <li><strong style="color:#fff;">Flash Erase Incomplete:</strong> Flash bits can only transition from 1 to 0 during writing; they cannot flip to 1 without a sector erase. Click the <strong>Erase Device Memory</strong> button in MPLAB X before programming.</li>
+                <li><strong style="color:#fff;">USB Power Drop:</strong> Ensure the board is connected directly to a PC motherboard USB port (avoid unpowered hubs).</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+
+      const target = document.getElementById(tabId);
+      if (target) target.classList.add('active');
+
+      const btn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.getAttribute('onclick').includes(tabId));
+      if (btn) btn.classList.add('active');
+    }
+
+    function copyText(text) {
+      navigator.clipboard.writeText(text).then(() => {
+        alert("Copied " + text + " to clipboard!");
+      });
+    }
+
+    function filterObis() {
+      const q = document.getElementById('obis-search').value.toLowerCase();
+      const rows = document.querySelectorAll('#obis-table tbody tr');
+      rows.forEach(r => {
+        const txt = r.innerText.toLowerCase();
+        r.style.display = txt.includes(q) ? '' : 'none';
+      });
+    }
+
+    const frameData = {
+      'snrm': {
+        hex: `<span class="hl-ctrl">TX:</span> <span class="hl-flag">7E</span> <span class="hl-addr">A0 07 03 21</span> <span class="hl-ctrl">93</span> <span class="hl-fcs">AF 01</span> <span class="hl-flag">7E</span>
+<span class="hl-ctrl">RX:</span> <span class="hl-flag">7E</span> <span class="hl-addr">A0 0A 21 02 03</span> <span class="hl-ctrl">73</span> <span class="hl-fcs">E8 92</span> <span class="hl-flag">7E</span>`,
+        exp: `<strong>1. HDLC SNRM / UA Exchange:</strong><br>
+        • <span class="hl-flag">7E</span>: Opening & Closing HDLC delimiter flag.<br>
+        • <span class="hl-addr">A0 07</span>: Format field (Format type 0xA, Frame length 7 bytes).<br>
+        • <span class="hl-addr">03</span>: Destination Address = Server Physical/Logical Address 1.<br>
+        • <span class="hl-addr">21</span>: Source Address = Client SAP 0x10 (Public) or 0x01 (Management).<br>
+        • <span class="hl-ctrl">93</span>: SNRM Control byte (Set Normal Response Mode with Poll bit = 1).<br>
+        • <span class="hl-ctrl">73</span>: UA Control byte (Unnumbered Acknowledge with Final bit = 1). Link is now established!`
+      },
+      'aarq': {
+        hex: `<span class="hl-ctrl">TX:</span> <span class="hl-flag">7E</span> <span class="hl-addr">A0 39 03 21</span> <span class="hl-ctrl">10</span> <span class="hl-fcs">5B C2</span> <span class="hl-llc">E6 E6 00</span> <span class="hl-apdu">60 36 A1 09 06 07 60 85 74 05 08 01 01 BE 23 04 21 28 1F 30 00 00 00 01 CtoS_Challenge[16]</span> <span class="hl-fcs">9D 44</span> <span class="hl-flag">7E</span>
+<span class="hl-ctrl">RX:</span> <span class="hl-flag">7E</span> <span class="hl-addr">A0 3E 21 02 03</span> <span class="hl-ctrl">30</span> <span class="hl-fcs">34 A1</span> <span class="hl-llc">E6 E7 00</span> <span class="hl-apdu">61 39 A1 09 06 07 60 85 74 05 08 01 01 A2 03 02 01 00 BE 23 04 21 28 1F 30 00 00 00 01 StoC_Challenge[16]</span> <span class="hl-fcs">B1 29</span> <span class="hl-flag">7E</span>`,
+        exp: `<strong>2. AARQ / AARE Handshake (COSEM Association):</strong><br>
+        • <span class="hl-llc">E6 E6 00</span> / <span class="hl-llc">E6 E7 00</span>: Standard LLC Sub-Network Access Protocol headers.<br>
+        • <span class="hl-apdu">60</span>: Application Association Request (AARQ tag).<br>
+        • <span class="hl-apdu">61</span>: Application Association Response (AARE tag, Result = 0x00 Accepted).<br>
+        • Contains the 16-byte random challenges generated for High Level Security (HLS 5).`
+      },
+      'hls': {
+        hex: `<span class="hl-ctrl">TX:</span> <span class="hl-flag">7E</span> <span class="hl-addr">A0 2B 03 21</span> <span class="hl-ctrl">32</span> <span class="hl-fcs">F1 08</span> <span class="hl-llc">E6 E6 00</span> <span class="hl-apdu">C3 01 C1 00 0F 00 00 28 00 00 FF 01 01 09 11</span> <span class="hl-gmac">SC(10) IC(00 00 00 01) GMAC_Tag_f_StoC[12]</span> <span class="hl-fcs">8E 12</span> <span class="hl-flag">7E</span>
+<span class="hl-ctrl">RX:</span> <span class="hl-flag">7E</span> <span class="hl-addr">A0 2B 21 02 03</span> <span class="hl-ctrl">52</span> <span class="hl-fcs">D0 73</span> <span class="hl-llc">E6 E7 00</span> <span class="hl-apdu">C7 01 C1 00 00 01 09 11</span> <span class="hl-gmac">SC(10) IC(00 00 03 E8) GMAC_Tag_f_CtoS[12]</span> <span class="hl-fcs">5A 94</span> <span class="hl-flag">7E</span>`,
+        exp: `<strong>3. Four-Pass HLS 5 (GMAC) Authentication:</strong><br>
+        • <span class="hl-apdu">C3 01</span>: ACTION.req invoking Method 1 (<code>reply_to_HLS_authentication</code>) on Association LN object (<code>0.0.40.0.0.255</code>).<br>
+        • <span class="hl-gmac">SC(0x10)</span>: Security Control = Suite 0 Authentication only (GMAC).<br>
+        • <span class="hl-gmac">IC</span>: Client Invocation Counter (4 bytes) preventing replay attacks.<br>
+        • <span class="hl-gmac">GMAC Tag (12 bytes)</span>: AES-GMAC tag computed over StoC challenge with the 128-bit Authentication Key.<br>
+        • <span class="hl-apdu">C7 01</span>: ACTION.resp containing mutual authentication tag $f(CtoS)$ verifying the server to the client.`
+      },
+      'glo-get': {
+        hex: `<span class="hl-ctrl">TX:</span> <span class="hl-flag">7E</span> <span class="hl-addr">A0 24 03 21</span> <span class="hl-ctrl">54</span> <span class="hl-fcs">82 1B</span> <span class="hl-llc">E6 E6 00</span> <span class="hl-apdu">C8</span> <span class="hl-gmac">SC(30) IC(00 00 00 02) AES_GCM_Ciphertext[13] GMAC_Tag[12]</span> <span class="hl-fcs">3C A9</span> <span class="hl-flag">7E</span>
+<span class="hl-ctrl">RX:</span> <span class="hl-flag">7E</span> <span class="hl-addr">A0 26 21 02 03</span> <span class="hl-ctrl">74</span> <span class="hl-fcs">91 3C</span> <span class="hl-llc">E6 E7 00</span> <span class="hl-apdu">C9</span> <span class="hl-gmac">SC(30) IC(00 00 03 E9) AES_GCM_Ciphertext[15] GMAC_Tag[12]</span> <span class="hl-fcs">E1 D5</span> <span class="hl-flag">7E</span>`,
+        exp: `<strong>4. Authenticated & Encrypted GLO-GET Request (AES-GCM-128):</strong><br>
+        • <span class="hl-apdu">C8</span>: GLO-GET-Request tag.<br>
+        • <span class="hl-gmac">SC(0x30)</span>: Security Control byte = Suite 0 Authenticated Encryption (Bit 4: Auth = 1, Bit 5: Enc = 1).<br>
+        • <span class="hl-gmac">IC</span>: Monotonically increasing invocation counter.<br>
+        • <span class="hl-gmac">Ciphertext</span>: Plaintext GET request encrypted with AES-GCM.<br>
+        • <span class="hl-gmac">Tag (12 bytes)</span>: 96-bit authentication tag ensuring message integrity.<br>
+        • <span class="hl-apdu">C9</span>: GLO-GET-Response tag containing the encrypted metrology value (e.g. Voltage A = 230.2 V).`
+      }
+    };
+
+    function showFrame(type) {
+      document.querySelectorAll('.frame-btn').forEach(b => b.classList.remove('active'));
+      const activeBtn = Array.from(document.querySelectorAll('.frame-btn')).find(b => b.getAttribute('onclick').includes(type));
+      if (activeBtn) activeBtn.classList.add('active');
+
+      const data = frameData[type];
+      if (data) {
+        document.getElementById('frame-display').innerHTML = data.hex;
+        document.getElementById('frame-explanation').innerHTML = data.exp;
+      }
+    }
+
+    // Initialize default frame display
+    showFrame('snrm');
+  </script>
+</body>
+</html>
