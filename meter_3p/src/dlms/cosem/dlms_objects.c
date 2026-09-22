@@ -883,12 +883,41 @@ static dlms_result_t handle_get_request(
         return DLMS_OK;
     } else if (get_type == DLMS_GET_REQUEST_NEXT) {
         /* Block Transfer GET-Request-Next */
-        if (req_len < 7 || !s_block_transfer.active) return DLMS_ERR_INVALID_PARAM;
-        uint32_t block_num = ((uint32_t)req[3] << 24) | ((uint32_t)req[4] << 16) |
-                             ((uint32_t)req[5] << 8) | req[6];
+        if (req_len < 7) return DLMS_ERR_INVALID_PARAM;
+        if (!s_block_transfer.active) {
+            resp[0] = DLMS_TAG_GET_RESPONSE;
+            resp[1] = DLMS_GET_RESPONSE_DATABLOCK;
+            resp[2] = invoke_id;
+            resp[3] = 0x01; /* last-block = true */
+            resp[4] = 0x00; resp[5] = 0x00; resp[6] = 0x00; resp[7] = 0x00;
+            resp[8] = 0x01; /* result: [1] IMPLICIT Data-Access-Result */
+            resp[9] = (uint8_t)DLMS_RESULT_NO_LONG_GET_IN_PROGRESS;
+            *resp_len = 10;
+            return DLMS_OK;
+        }
 
-        uint16_t offset = (uint16_t)((block_num - 1) * DLMS_BLOCK_TRANSFER_SIZE);
-        uint16_t rem = (s_block_transfer.cache_len > offset) ? (s_block_transfer.cache_len - offset) : 0;
+        uint32_t ack_block_num = ((uint32_t)req[3] << 24) | ((uint32_t)req[4] << 16) |
+                                 ((uint32_t)req[5] << 8) | req[6];
+        uint32_t next_block_num = ack_block_num + 1;
+
+        uint16_t offset = (uint16_t)(ack_block_num * DLMS_BLOCK_TRANSFER_SIZE);
+        if (offset >= s_block_transfer.cache_len) {
+            s_block_transfer.active = false;
+            resp[0] = DLMS_TAG_GET_RESPONSE;
+            resp[1] = DLMS_GET_RESPONSE_DATABLOCK;
+            resp[2] = invoke_id;
+            resp[3] = 0x01; /* last-block = true */
+            resp[4] = (uint8_t)(next_block_num >> 24);
+            resp[5] = (uint8_t)(next_block_num >> 16);
+            resp[6] = (uint8_t)(next_block_num >> 8);
+            resp[7] = (uint8_t)(next_block_num & 0xFF);
+            resp[8] = 0x01; /* result: [1] IMPLICIT Data-Access-Result */
+            resp[9] = (uint8_t)DLMS_RESULT_DATA_BLOCK_NUMBER_INV;
+            *resp_len = 10;
+            return DLMS_OK;
+        }
+
+        uint16_t rem = s_block_transfer.cache_len - offset;
         uint16_t send_len = (rem > DLMS_BLOCK_TRANSFER_SIZE) ? DLMS_BLOCK_TRANSFER_SIZE : rem;
         bool last_block = (offset + send_len >= s_block_transfer.cache_len);
 
@@ -896,10 +925,10 @@ static dlms_result_t handle_get_request(
         resp[1] = DLMS_GET_RESPONSE_DATABLOCK;
         resp[2] = invoke_id;
         resp[3] = last_block ? 0x01 : 0x00;
-        resp[4] = (uint8_t)(block_num >> 24);
-        resp[5] = (uint8_t)(block_num >> 16);
-        resp[6] = (uint8_t)(block_num >> 8);
-        resp[7] = (uint8_t)(block_num & 0xFF);
+        resp[4] = (uint8_t)(next_block_num >> 24);
+        resp[5] = (uint8_t)(next_block_num >> 16);
+        resp[6] = (uint8_t)(next_block_num >> 8);
+        resp[7] = (uint8_t)(next_block_num & 0xFF);
         resp[8] = 0x00; /* raw-data */
 
         dlms_axdr_encoder_t enc;
@@ -907,6 +936,9 @@ static dlms_result_t handle_get_request(
         dlms_axdr_encode_length(&enc, send_len);
         dlms_axdr_encode_raw(&enc, s_block_transfer.cache_buf + offset, send_len);
         *resp_len = 9 + enc.offset;
+
+        s_block_transfer.current_block_num = next_block_num;
+        s_block_transfer.sent_offset = offset + send_len;
 
         if (last_block) {
             s_block_transfer.active = false;
